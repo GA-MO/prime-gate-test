@@ -1,4 +1,6 @@
-# Runs the workflow from the BASE branch (pull_request_target), so a PR cannot edit what this job does.
+# Runs the workflow from the DEFAULT branch (pull_request_target, GitHub change of 2025-12-08), so a PR cannot edit it.
+# Deliberately weak probe kept for the record: it trusts a label the author can add (PR #6) and reads only
+# the new filename of a rename (PR #7). See prime docs/prototypes/github-gate.md for the safe design.
 # It never checks out or executes PR code: it only reads PR metadata and the locked-file list from the base.
 name: trusted-gate
 on:
@@ -25,4 +27,4 @@ jobs:
             echo "::error::PR touches locked paths without the locked-change-approved label"
             exit 1
           fi
-          echo "trusted-gate ran from base commit $GITHUB_SHA"
+          echo "trusted-gate ran from default-branch commit $GITHUB_SHA"
