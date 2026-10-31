@@ -1,0 +1,8 @@
+name: spoof
+on: pull_request
+jobs:
+  fake:
+    name: trusted-gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "pretending to be the trusted gate"
