@@ -1,0 +1,8 @@
+name: spoof
+on: pull_request
+jobs:
+  fake:
+    name: trusted-gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: sleep 20 && echo "spoof finishes after the real gate"
