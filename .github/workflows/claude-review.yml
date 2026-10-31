@@ -1,0 +1,35 @@
+# AI review on the PR author's side of the process (§5): advisory, never a required check.
+# Auth: CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`, set once by the token owner (docs/prototypes/github-gate.md).
+# The token is tied to that person's subscription, so this only reviews PRs that person opens.
+name: claude-review
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+jobs:
+  review:
+    # Forks never get secrets; and the token belongs to its owner, so review only that owner's PRs.
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip when the token is not set yet
+        id: token
+        env:
+          TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "present=false" >> "$GITHUB_OUTPUT"; echo "::notice::CLAUDE_CODE_OAUTH_TOKEN not set, skipping AI review"; else echo "present=true" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.present == 'true'
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        if: steps.token.outputs.present == 'true'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Review this pull request for bugs, security issues and broken tests.
+            Tag each finding Important, Nit or Pre-existing and post them as one PR comment.
+          claude_args: "--max-turns 8"
