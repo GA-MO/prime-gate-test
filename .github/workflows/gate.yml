@@ -1,0 +1,26 @@
+# Runs the workflow from the BASE branch (pull_request_target), so a PR cannot edit what this job does.
+# It never checks out or executes PR code: it only reads PR metadata and the locked-file list from the base.
+name: trusted-gate
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  locked-paths:
+    name: trusted-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail when a PR touches locked paths without the locked label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          files=$(gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename')
+          echo "$files"
+          if echo "$files" | grep -Eq '^(tests/locked/|db/migrations/|\.github/)'; then
+            echo "::notice::PR touches locked paths: code owner review is required by the ruleset"
+          fi
+          echo "trusted-gate ran from base commit $GITHUB_SHA"

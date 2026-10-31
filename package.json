@@ -1,0 +1,1 @@
+{ "name": "prime-gate-test", "private": true, "type": "module", "scripts": { "test": "node --test tests/" } }

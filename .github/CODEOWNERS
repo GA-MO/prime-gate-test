@@ -1,0 +1,5 @@
+# Code owner must approve changes to these paths (ruleset: require review from code owners).
+/tests/locked/   @GA-MO
+/db/migrations/  @GA-MO
+/.github/        @GA-MO
+/package.json    @GA-MO
